@@ -374,7 +374,7 @@ class CallbackController extends Controller
 			    
 		  }
 
-                $this->paymentHelper->createPlentyPayment($paymentData);
+                $this->paymentHelper->createPlentyPayment($paymentData, $partial_refund_amount);
                 $this->sendCallbackMail($callbackComments);
                 return $this->renderTemplate($callbackComments);
             }
