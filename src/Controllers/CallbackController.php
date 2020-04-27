@@ -367,6 +367,7 @@ class CallbackController extends Controller
 		    foreach($total_order_details as $total_order_detail) {
 			     
 			    if ($total_order_detail->referenceTid != $total_order_detail->tid) {
+				    $this->getLogger(__METHOD__)->error('devvvv', $totalCallbackAmount);
 				    $totalCallbackAmount += $total_order_detail->callbackAmount;
 				    $partial_refund_amount = ($nnTransactionHistory->order_total_amount > ($totalCallbackAmount + $this->aryCaptureParams['amount']) )? true : false;
 			    }
