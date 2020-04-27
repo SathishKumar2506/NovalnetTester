@@ -360,6 +360,18 @@ class CallbackController extends Controller
                 $paymentData['type']        = 'debit';
                 $paymentData['order_no']    = $nnTransactionHistory->orderNo;
                 $paymentData['mop']         = $nnTransactionHistory->mopId;
+		    
+		    $total_order_details = $this->transaction->getTransactionData('orderNo', $nnTransactionHistory->orderNo);
+		
+		    $totalCallbackAmount = 0;
+		    foreach($total_order_details as $total_order_detail) {
+			     
+			    if ($total_order_detail->referenceTid != $total_order_detail->tid) {
+				    $totalCallbackAmount += $total_order_detail->callbackAmount;
+				    $partial_refund_amount = ($nnTransactionHistory->order_total_amount > ($totalCallbackAmount + $this->aryCaptureParams['amount']) )? true : false;
+			    }
+			    
+		  }
 
                 $this->paymentHelper->createPlentyPayment($paymentData);
                 $this->sendCallbackMail($callbackComments);
@@ -404,6 +416,11 @@ class CallbackController extends Controller
                 
                     $transactionStatus = $this->payment_details($nnTransactionHistory->orderNo);
                     $saveAdditionData = false;
+			
+			if ($this->aryCaptureParams['tid_status'] == '100' && $transactionStatus == '98') {
+				 $saveAdditionData = true;
+				$orderStatus = $this->config->get('Novalnet.novalnet_cc_order_completion_status'); 
+			}
                           
                     // Checks for Guarantee Onhold
                     if(in_array($this->aryCaptureParams['tid_status'], ['91', '99']) && $transactionStatus == '75') {
@@ -441,7 +458,7 @@ class CallbackController extends Controller
                             
                     } 
                     $db_details = $this->paymentService->getDatabaseValues($nnTransactionHistory->orderNo);
-                            if(in_array ($db_details['payment_id'], [ '27', '37', '40', '41']) && $saveAdditionData) {
+                            if(in_array ($db_details['payment_id'], ['6', '27', '37', '40', '41']) && $saveAdditionData) {
                                 if (in_array($this->aryCaptureParams['tid_status'], ['91', '100'] ) && in_array ($db_details['payment_id'], [ '27', '41']) ) {
                                         $paymentDetails = $this->payment_details($nnTransactionHistory->orderNo, true);
                                         $bankDetails = json_decode($paymentDetails);
