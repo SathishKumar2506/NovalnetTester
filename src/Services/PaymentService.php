@@ -218,7 +218,7 @@ class PaymentService
                     $requestData['order_status'] = trim($this->config->get('Novalnet.'. $requestData['payment_method'] .'_payment_guarantee_status'));
                     $requestData['paid_amount'] = 0;
                 } elseif($requestData['payment_id'] == '41' && $requestData['tid_status'] == '100') {
-                    $requestData['order_status'] = trim($this->config->get('Novalnet.novalnet_invoice_callback_order_status'));
+                    $requestData['order_status'] = trim($this->config->get('Novalnet.novalnet_invoice_payment_guarantee_order_completion_status'));
                     $requestData['paid_amount'] = $requestData['amount'];
                 } elseif(in_array($requestData['payment_id'], ['27', '59']) && $requestData['tid_status'] == '100') {
                     $requestData['order_status'] = trim($this->config->get('Novalnet.'. $requestData['payment_method'] .'_order_completion_status'));
