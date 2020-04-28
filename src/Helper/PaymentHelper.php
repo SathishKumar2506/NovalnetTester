@@ -685,7 +685,7 @@ class PaymentHelper
         $payment->transactionType = Payment::TRANSACTION_TYPE_BOOKED_POSTING;
         $payment->status =  ($partial_refund_amount == true) ? Payment::STATUS_PARTIALLY_REFUNDED : Payment::STATUS_REFUNDED;
         $payment->currency = $currency;
-        $payment->amount = $paymentData['remaining_paid_amount'];
+        $payment->amount = $paymentData['refunded_amount'];
         $payment->receivedAt = date('Y-m-d H:i:s');
         $payment->type = 'debit';
         $payment->parentId = $parentPaymentId;
