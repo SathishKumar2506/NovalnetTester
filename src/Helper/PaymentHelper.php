@@ -30,6 +30,7 @@ use Plenty\Modules\Comment\Contracts\CommentRepositoryContract;
 use Plenty\Modules\Order\Shipping\Countries\Contracts\CountryRepositoryContract;
 use Plenty\Modules\Frontend\Session\Storage\Contracts\FrontendSessionStorageFactoryContract;
 use Novalnet\Constants\NovalnetConstants;
+use Novalnet\Services\TransactionService;
 
 /**
  * Class PaymentHelper
@@ -87,7 +88,12 @@ class PaymentHelper
     * @var $sessionStorage
     */
     private $sessionStorage;
-        
+      
+	
+    /**
+     * @var transaction
+     */
+    private $transaction;
 
     /**
      * Constructor.
@@ -108,6 +114,7 @@ class PaymentHelper
                                 CommentRepositoryContract $orderComment,
                                 ConfigRepository $configRepository,
                                 FrontendSessionStorageFactoryContract $sessionStorage,
+				 TransactionService $tranactionService,
                                 CountryRepositoryContract $countryRepository
                               )
     {
@@ -118,6 +125,7 @@ class PaymentHelper
         $this->orderComment                   = $orderComment;      
         $this->config                         = $configRepository;
         $this->sessionStorage                 = $sessionStorage;
+	    $this->transaction          = $tranactionService;
         $this->countryRepository              = $countryRepository;
     }
 
