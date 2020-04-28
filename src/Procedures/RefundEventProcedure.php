@@ -130,12 +130,12 @@ class RefundEventProcedure
 						$transactionComments .= PHP_EOL . sprintf($this->paymentHelper->getTranslatedText('refund_message', $paymentRequestData['lang']), $parentOrder[0]->tid, (float) ($paymentRequestData['refund_param'] / 100) );
 					 }
 					
-					$paymentData['tid'] = !empty($responseData['tid']) ? $responseData['tid'] : $parentOrders[0]->tid;
+					$paymentData['tid'] = !empty($responseData['tid']) ? $responseData['tid'] : $parentOrder[0]->tid;
 					$paymentData['tid_status'] = $responseData['tid_status'];
 					$paymentData['refunded_amount'] = (float) $orderAmount;
 					$paymentData['child_order_id'] = $child_order_id;
 					$paymentData['parent_order_id'] = $order->id;
-					$paymentData['parent_tid'] = $parentOrders[0]->tid;
+					$paymentData['parent_tid'] = $parentOrder[0]->tid;
 					$paymentData['parent_order_amount'] = (float) $parent_order_amount;
 					$paymentData['payment_name'] = strtolower($paymentKey);
 					
