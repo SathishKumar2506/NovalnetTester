@@ -443,7 +443,7 @@ class CallbackController extends Controller
                             
                             $callbackComments = '</br>' . sprintf($this->paymentHelper->getTranslatedText('callback_order_confirmation_text',$orderLanguage), date('d.m.Y'), date('H:i:s'));                            
                             if (in_array($transactionStatus, ['75', '91']) && $this->aryCaptureParams['tid_status'] == '100' && $this->aryCaptureParams['payment_type'] == 'GUARANTEED_INVOICE') {
-                                $orderStatus = $this->config->get('Novalnet.novalnet_invoice_callback_order_status'); 
+                                $orderStatus = $this->config->get('Novalnet.novalnet_invoice_payment_guarantee_order_completion_status'); 
                                 
                             }   
                             
