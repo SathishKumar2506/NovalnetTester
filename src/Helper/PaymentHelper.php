@@ -660,11 +660,22 @@ class PaymentHelper
         }
         /** @var Payment $payment */
         $payment = pluginApp(\Plenty\Modules\Payment\Models\Payment::class);
+        $total_order_details = $this->transaction->getTransactionData('orderNo', $paymentData['parent_order_id']);
+        $this->getLogger(__METHOD__)->error('parent', $total_order_details);
+        $totalCallbackAmount = 0;
+		    foreach($total_order_details as $total_order_detail) {
+			     
+			    if ($total_order_detail->referenceTid != $total_order_detail->tid) {
+				    $totalCallbackAmount += $total_order_detail->callbackAmount;
+				    $this->getLogger(__METHOD__)->error('testtteewrwew', $totalCallbackAmount);
+				    $partial_refund_amount = ((float) ($paymentData['parent_order_amount'] * 100) > ($totalCallbackAmount + (float) ($paymentData['refunded_amount'] * 100) ) )? true : false;
+			    }
+		    }
        
         $payment->updateOrderPaymentStatus = true;
         $payment->mopId = (int) $mop;
         $payment->transactionType = Payment::TRANSACTION_TYPE_BOOKED_POSTING;
-        $payment->status = Payment::STATUS_CAPTURED;
+        $payment->status =  ($partial_refund_amount == true) ? Payment::STATUS_PARTIALLY_REFUNDED : Payment::STATUS_REFUNDED;
         $payment->currency = $currency;
         $payment->amount = $paymentData['remaining_paid_amount'];
         $payment->receivedAt = date('Y-m-d H:i:s');
@@ -681,22 +692,5 @@ class PaymentHelper
         $this->assignPlentyPaymentToPlentyOrder($paymentObj, (int)$paymentData['child_order_id']);
     }
     
-    /**
-      * Update parent payment status
-      *
-      * @param object $paymentDetails
-      * @param int $parent_order_amount
-      * @param int $orderAmount
-      * @return none
-      */
     
-    public function getNewPaymentStatus($paymentDetails, $parent_order_amount, $orderAmount)
-    {
-        $payment = pluginApp(\Plenty\Modules\Payment\Models\Payment::class);
-        $payments = pluginApp(\Plenty\Modules\Payment\Contracts\PaymentRepositoryContract::class); 
-         foreach($paymentDetails as $payment){
-           $payment->status = ($parent_order_amount > $orderAmount) ? Payment::STATUS_PARTIALLY_REFUNDED : Payment::STATUS_REFUNDED;
-           $payments->updatePayment($payment);
-         }
-    }
 }
