@@ -552,6 +552,14 @@
                   "defaultValue":"3"
                }
             },
+           "novalnet_invoice_payment_guarantee_order_completion_status":{  
+               "type":"inputText",
+               "required":false,
+               "label":"Config.paymentGuaranteeOrderCompletionStatus",
+               "options":{  
+                  "defaultValue":"7.1"
+               }
+            },
             "novalnet_invoice_payment_guarantee_force_active":{  
                "type":"checkBox",
                "required":false,
