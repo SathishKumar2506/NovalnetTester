@@ -87,9 +87,8 @@ class RefundEventProcedure
         $payments = pluginApp(\Plenty\Modules\Payment\Contracts\PaymentRepositoryContract::class);  
 	   $paymentDetails = $payments->getPaymentsByOrderId($order->id);
 	   $orderAmount = (float) $order->amounts[0]->invoiceTotal;
-	   $parent_order_amount = (float) $paymentDetails[0]->amount;
-	    if ($order->typeId == OrderType::TYPE_CREDIT_NOTE && $parent_order_amount >= $orderAmount) {
-		$partial_refund_amount =  $parent_order_amount -  $orderAmount;
+	   foreach ($paymentDetails as $paymentDetail) {
+		    $parent_order_amount = (float) $paymentDetail->amount;
 	    }  
 	    
 	   $paymentKey = $paymentDetails[0]->method->paymentKey;
@@ -114,7 +113,7 @@ class RefundEventProcedure
 					'key'            => $key, 
 					'refund_request' => 1, 
 					'tid'            => $parentOrder[0]->tid, 
-					 'refund_param'  => !empty($partial_refund_amount) ?  (float) $partial_refund_amount * 100 : (float) $orderAmount * 100,
+					 'refund_param'  => (float) $orderAmount * 100,
 					'remote_ip'      => $this->paymentHelper->getRemoteAddress(),
 					'lang'           => 'de'   
 					 ];
@@ -131,17 +130,19 @@ class RefundEventProcedure
 						$transactionComments .= PHP_EOL . sprintf($this->paymentHelper->getTranslatedText('refund_message', $paymentRequestData['lang']), $parentOrder[0]->tid, (float) ($paymentRequestData['refund_param'] / 100) );
 					 }
 					
-					$paymentData['tid'] = !empty($responseData['tid']) ? $responseData['tid'] : $parentOrder[0]->tid;
+					$paymentData['tid'] = !empty($responseData['tid']) ? $responseData['tid'] : $parentOrders[0]->tid;
 					$paymentData['tid_status'] = $responseData['tid_status'];
-					$paymentData['remaining_paid_amount'] = (float) $orderAmount;
+					$paymentData['refunded_amount'] = (float) $orderAmount;
 					$paymentData['child_order_id'] = $child_order_id;
-					$paymentData['parent_order_id'] = $parent_order_id;
-					$paymentData['parent_tid'] = $parentOrder[0]->tid;
+					$paymentData['parent_order_id'] = $order->id;
+					$paymentData['parent_tid'] = $parentOrders[0]->tid;
+					$paymentData['parent_order_amount'] = (float) $parent_order_amount;
+					$paymentData['payment_name'] = strtolower($paymentKey);
 					
 					if ($order->typeId == OrderType::TYPE_CREDIT_NOTE) {
 						 
-						 $this->paymentHelper->createRefundPayment($paymentDetails, $paymentData, $transactionComments);
-						 $this->paymentHelper->getNewPaymentStatus($paymentDetails, $parent_order_amount, $orderAmount);
+						 $this->saveTransactionLog($paymentRequestData, $paymentData);
+	 $this->paymentHelper->createRefundPayment($paymentDetails, $paymentData, $transactionComments);
 					} else {
 						
 						$paymentData['currency']    = $paymentDetails[0]->currency;
@@ -163,6 +164,24 @@ class RefundEventProcedure
 						$this->getLogger(__METHOD__)->error('Novalnet::doRefund', $e);
 					}	
 	    }
+    }
+	
+	public function saveTransactionLog($paymentRequestData,$paymentData)
+    {
+       
+        $insertTransactionLog = [
+		'callback_amount' => $paymentRequestData['refund_param'],
+		 'amount'     => (float) ($paymentData['parent_order_amount'] * 100) ,
+        	'tid'            => $paymentRequestData['tid'],
+        	'ref_tid'         => $paymentData['tid'],
+       		'order_no'        => $paymentData['parent_order_id'],
+		'payment_name'	  => $paymentData['payment_name']
+		];
+	   
+
+        $this->transaction->saveTransaction($insertTransactionLog);
+	    
+	
     }
    
 }
